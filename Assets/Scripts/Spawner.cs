@@ -1,41 +1,37 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using System.Security.Cryptography;
 using UnityEngine;
 
 public class Spawner : MonoBehaviour
 {
-    
-    [Tooltip("The Prefab to be spawned into the scene.")]
-    public GameObject spawnPrefab = null;
+    public GameObject spawnPrefab;
+    [Min(1f)] public float spawnTime = 18f;
+    public Material cometMaterial;
+    public Material tailMaterial;
 
-    [Tooltip("The time between spawns")]
-    public float spawnTime = 5.0f;
+    private float countdown = 6f;
+    private readonly System.Random random = new System.Random(7341);
 
-    // keep track of time passed for next spawn
-    private float nextSpawn = 0f;
-
-    // Start is called before the first frame update
-    void Start()
+    private void Update()
     {
-        nextSpawn = 0f;
+        if (SolarSystemDirector.Paused || spawnPrefab == null) return;
+        countdown -= Time.unscaledDeltaTime;
+        if (countdown > 0f) return;
+        countdown = Mathf.Max(1f, spawnTime);
+        if (GetComponentsInChildren<Projectile>().Length >= 4) return;
+
+        Vector3 position = new Vector3(-95f, Range(10f, 25f), Range(-20f, 20f));
+        Vector3 target = new Vector3(Range(7f, 14f), 0f, Range(7f, 14f));
+        GameObject instance = Instantiate(spawnPrefab, position,
+            Quaternion.LookRotation(target - position), transform);
+        instance.name = "Passing comet";
+        Projectile comet = instance.GetComponent<Projectile>();
+        if (comet == null) comet = instance.AddComponent<Projectile>();
+        comet.projectileSpeed = 5f;
+        comet.destroyDistance = 140f;
+        comet.Configure(cometMaterial, tailMaterial);
     }
 
-    // Update is called once per frame
-    void Update()
+    private float Range(float minimum, float maximum)
     {
-        // update the time until nextSpawn
-        nextSpawn += Time.deltaTime;
-
-        // if time to spawn
-        if (nextSpawn>spawnTime)
-        {
-            // Spawn the gameObject at the spawners current position and rotation
-            GameObject projectileGameObject = Instantiate(spawnPrefab, transform.position, transform.rotation, null);
-
-            // reset the time until nextSpawn
-            nextSpawn = 0f;
-        }
-
+        return Mathf.Lerp(minimum, maximum, (float)random.NextDouble());
     }
 }

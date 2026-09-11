@@ -1,0 +1,2 @@
+Runtime smoke check after 7.4 seconds
+PASS: no runtime errors; worlds, two cameras, map render target, audio sources, rings, stars, bloom, and comet cap verified.
